@@ -62,6 +62,57 @@ func streamingAPI(client greetStreamingpb.GreetServiceClient){
 	}
 }
 
+func biDirectionalStreaming(client greetStreamingpb.GreetServiceClient){
+	fmt.Println("Starting Bi-directional streaming...")
+
+	list := []greetStreamingpb.GreetEveryoneRequest{
+		{Content: &greetStreamingpb.Greeting{
+			FirstName: "Luke",
+			LastName:  "Skywalker",
+		}},
+		{Content: &greetStreamingpb.Greeting{
+			FirstName: "Alice",
+			LastName:  "Bob",
+		}},
+	}
+
+	stream,err :=client.GreetEveryone(context.Background())
+	if err != nil {
+		log.Fatalf("error creating client stream: %v", err)
+	}
+
+	waitChannel := make(chan struct{})
+
+	go func() { // goroutine to send a bunch of messages to server
+		//sending bunch of requests
+		for _, element := range list{
+			_ = stream.Send(&element)
+			time.Sleep(1000 * time.Millisecond)
+		}
+		_ = stream.CloseSend() //ending the stream
+	}()
+
+	go func() { // goroutine to receive the messages from server
+		for true {
+			res, err := stream.Recv() // receiving from server
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				close(waitChannel)
+				log.Fatalf("Error receiving response from server: %v", err)
+				return
+			}
+
+			fmt.Printf("Server response: %v\n", res.GetResult())
+		}
+		close(waitChannel) // closing waiting channel to end the function.
+	}()
+
+	<- waitChannel // this will block the function from ending (goroutine)
+
+}
+
 func main() {
 	fmt.Print("Starting client \n")
 
@@ -76,7 +127,9 @@ func main() {
 
 	//streamingAPI(client)
 
-	streamingLongGreet(client)
+	//streamingLongGreet(client)
+
+	biDirectionalStreaming(client)
 }
 
 

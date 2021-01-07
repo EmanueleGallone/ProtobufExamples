@@ -42,8 +42,40 @@ func (*server) LongGreet(stream greetStreamingpb.GreetService_LongGreetServer) e
 	return nil
 }
 
+/*
+Used in bi-directional streaming
+ */
+func (*server) GreetEveryone(stream greetStreamingpb.GreetService_GreetEveryoneServer) error {
+	fmt.Println("Greet Everyone invoked")
+	var result string
+
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			log.Fatalf("error receiving from stream: %v", err)
+			return err
+		}
+
+		result = "Hello " + req.GetContent().GetFirstName() + ";"
+		res := greetStreamingpb.GreetEveryoneResponse{
+			Result: result,
+		}
+
+		if err := stream.Send(&res); err != nil{
+			log.Fatalf("error sending response: %v", err)
+			return err
+		}
+
+	} //end of for true
+
+	return nil
+}
+
 func main() {
-	fmt.Print("Starting server")
+	fmt.Println("Starting server")
 
 	listener, err := net.Listen("tcp", "0.0.0.0:50051")
 	if err != nil {

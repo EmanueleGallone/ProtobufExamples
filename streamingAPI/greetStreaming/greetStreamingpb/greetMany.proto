@@ -8,22 +8,6 @@ message Greeting {
   string last_name = 2;
 }
 
-message LongGreetRequest {
-  Greeting content = 1;
-}
-message LongGreetResponse {
-  string result = 1;
-}
-
-service GreetService {
-  //streaming API
-  rpc GreetMany(GreetManyRequest) returns (stream GreetManyResponse) {};
-
-  rpc LongGreet(stream LongGreetRequest) returns (LongGreetResponse) {};
-};
-
-////////////////////
-
 message GreetManyRequest {
   Greeting content = 1;
 }
@@ -31,3 +15,29 @@ message GreetManyRequest {
 message GreetManyResponse {
   string result = 1;
 }
+
+message LongGreetRequest {
+  Greeting content = 1;
+}
+message LongGreetResponse {
+  string result = 1;
+}
+
+message GreetEveryoneRequest {
+  Greeting content = 1;
+}
+
+message GreetEveryoneResponse {
+  string result = 1;
+}
+
+service GreetService {
+  //streaming API
+  rpc GreetMany(GreetManyRequest) returns (stream GreetManyResponse) {};
+
+  //clienst streaming API
+  rpc LongGreet(stream LongGreetRequest) returns (LongGreetResponse) {};
+
+  //Bi-directional streaming API
+  rpc GreetEveryone(stream GreetEveryoneRequest) returns (stream GreetEveryoneResponse){};
+};
