@@ -12,8 +12,8 @@ func UnaryRPCCall(client greetpb.GreetServiceClient) {
 
 	//fmt.Printf("Created client: %v", client)
 	req := greetpb.GreetRequest{Content: &greetpb.Greeting{
-		FirstName: "manu",
-		LastName:  "stre",
+		FirstName: "qwerty",
+		LastName:  "azerty",
 	},
 	}
 
